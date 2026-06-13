@@ -1,28 +1,32 @@
-version: '3.8'
+target: all
+multitenancy_enabled: true
 
-services:
-  mimir:
-    image: grafana/mimir:2.11.0
-    container_name: mimir
-    command: ["-config.file=/etc/mimir.yaml"]
-    # Restore the ports block so Docker DNS can route internal traffic
-    ports:
-      - "9009:9009"
-      - "9095:9095"
-    volumes:
-      - ./mimir-config.yaml:/etc/mimir.yaml
+server:
+  http_listen_port: 9009
+  grpc_listen_port: 9095
 
-  loki:
-    image: grafana/loki:2.9.4
-    container_name: loki
-    command: ["-config.file=/etc/loki/local-config.yaml"]
-    ports:
-      - "3100:3100"
+ingester:
+  ring:
+    replication_factor: 1
 
-  grafana:
-    image: grafana/grafana:10.4.1
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+blocks_storage:
+  backend: filesystem
+  bucket_store:
+    sync_dir: /tmp/mimir/tsdb-sync
+  filesystem:
+    dir: /tmp/mimir/data/tsdb
+  tsdb:
+    dir: /tmp/mimir/tsdb
+
+compactor:
+  data_dir: /tmp/mimir/data/compactor
+
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /tmp/mimir/data/rules
+
+alertmanager_storage:
+  backend: filesystem
+  filesystem:
+    dir: /tmp/mimir/data/alerts
