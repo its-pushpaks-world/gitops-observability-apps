@@ -1,0 +1,36 @@
+receivers:
+  hostmetrics:
+    collection_interval: 15s
+    scrapers:
+      cpu:
+      memory:
+
+  filelog:
+    include: [/var/log/syslog] # Swap this with your Tomcat logs directory later
+    start_at: end
+
+processors:
+  batch:
+    timeout: 5s
+
+exporters:
+  prometheusremotewrite:
+    endpoint: "http://<OBSERVABILITY_HUB_PRIVATE_IP>:9009/api/v1/push"
+    headers:
+      X-Scope-OrgID: "tenant-tomcat"
+
+  loki:
+    endpoint: "http://<OBSERVABILITY_HUB_PRIVATE_IP>:3100/loki/api/v1/push"
+    headers:
+      X-Scope-OrgID: "tenant-tomcat"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [hostmetrics]
+      processors: [batch]
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [filelog]
+      processors: [batch]
+      exporters: [loki]
