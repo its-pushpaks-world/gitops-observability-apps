@@ -6,8 +6,16 @@ receivers:
       cpu:
       memory:
 
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'tomcat-app'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['127.0.0.1:9404']
+
   filelog:
-    include:
+    include: 
       - /var/log/syslog
       - /var/log/tomcat9/*.log
       - /var/log/tomcat9/*.out
@@ -16,6 +24,19 @@ receivers:
 processors:
   batch:
     timeout: 5s
+
+  # 1. Hardcodes a "job" label so you can filter by this specific EC2 server
+  resource:
+    attributes:
+      - key: job
+        value: "tomcat-ec2"
+        action: insert
+
+  # 2. Extracts the hidden file path from OTel and turns it into a searchable Loki label
+  groupbyattrs:
+    keys:
+      - log.file.path
+# -------------------------------
 
 exporters:
   prometheusremotewrite:
@@ -31,10 +52,12 @@ exporters:
 service:
   pipelines:
     metrics:
-      receivers: [hostmetrics]
-      processors: [batch]
+      # Added 'resource' here so your metrics also get the job="tomcat-ec2" label
+      receivers: [hostmetrics, prometheus]
+      processors: [resource, batch]
       exporters: [prometheusremotewrite]
     logs:
       receivers: [filelog]
-      processors: [batch]
+      # MUST add the new processors here so the labels are attached before shipping to Loki
+      processors: [resource, groupbyattrs, batch]
       exporters: [loki]
