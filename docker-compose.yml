@@ -1,25 +1,25 @@
 version: '3.8'
 
 services:
-  # Monolithic Mimir (Lightweight, fits on t2/t3.micro)
   mimir:
     image: grafana/mimir:2.11.0
+    container_name: mimir
     command: ["-config.file=/etc/mimir.yaml"]
-    ports:
-      - "9009:9009"
+    # Ports block is removed because network_mode: host handles this natively
+    network_mode: host 
     volumes:
       - ./mimir-config.yaml:/etc/mimir.yaml
 
-  # Monolithic Loki
   loki:
     image: grafana/loki:2.9.4
+    container_name: loki
     command: ["-config.file=/etc/loki/local-config.yaml"]
     ports:
       - "3100:3100"
 
-  # Grafana Dashboard Engine
   grafana:
     image: grafana/grafana:10.4.1
+    container_name: grafana
     ports:
       - "3000:3000"
     environment:
