@@ -1,29 +1,26 @@
+target: all
 multitenancy_enabled: true
 
-# Runs all components in a single process
-target: all
+server:
+  http_listen_port: 9009
+  grpc_listen_port: 9095
 
-# Tells the storage layer to use the local disk instead of S3/Cloud
+ingester:
+  ring:
+    replication_factor: 1
+
 blocks_storage:
   backend: filesystem
-  tsdb:
-    dir: /tmp/mimir/tsdb
   bucket_store:
     sync_dir: /tmp/mimir/tsdb-sync
   filesystem:
     dir: /tmp/mimir/data/tsdb
+  tsdb:
+    dir: /tmp/mimir/tsdb
 
 compactor:
-  data_dir: /tmp/mimir/compactor
+  data_dir: /tmp/mimir/data/compactor
 
-# Simple in-memory setup for single-instance mode
-ingester:
-  ring:
-    kvstore:
-      store: inmemory
-    replication_factor: 1
-
-# Direct paths for local rule and alert storage
 ruler_storage:
   backend: filesystem
   filesystem:
