@@ -15,12 +15,12 @@ processors:
 
 exporters:
   prometheusremotewrite:
-    endpoint: "http://<OBSERVABILITY_HUB_PRIVATE_IP>:9009/api/v1/push"
+    endpoint: "http://10.0.1.167:9009/api/v1/push"
     headers:
       X-Scope-OrgID: "tenant-tomcat"
 
   loki:
-    endpoint: "http://<OBSERVABILITY_HUB_PRIVATE_IP>:3100/loki/api/v1/push"
+    endpoint: "http://10.0.1.167:3100/loki/api/v1/push"
     headers:
       X-Scope-OrgID: "tenant-tomcat"
 
