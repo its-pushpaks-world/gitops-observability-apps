@@ -5,8 +5,10 @@ services:
     image: grafana/mimir:2.11.0
     container_name: mimir
     command: ["-config.file=/etc/mimir.yaml"]
-    # Ports block is removed because network_mode: host handles this natively
-    network_mode: host 
+    # Restore the ports block so Docker DNS can route internal traffic
+    ports:
+      - "9009:9009"
+      - "9095:9095"
     volumes:
       - ./mimir-config.yaml:/etc/mimir.yaml
 
@@ -24,3 +26,4 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+
