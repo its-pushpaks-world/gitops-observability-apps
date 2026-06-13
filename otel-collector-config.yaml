@@ -1,3 +1,4 @@
+# update /etc/otelcol-contrib/config.yaml with this file
 receivers:
   hostmetrics:
     collection_interval: 15s
@@ -6,7 +7,10 @@ receivers:
       memory:
 
   filelog:
-    include: [/var/log/syslog] # Swap this with your Tomcat logs directory later
+    include:
+      - /var/log/syslog
+      - /var/log/tomcat9/*.log
+      - /var/log/tomcat9/*.out
     start_at: end
 
 processors:
