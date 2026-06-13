@@ -1,40 +1,35 @@
 multitenancy_enabled: true
 
-# Target parameters for single-binary monolithic execution
+# Runs all components in a single process
 target: all
 
-# Explicitly setup metadata server storage
-ingester:
-  ring:
-    kvstore:
-      store: memberlist
-    replication_factor: 1
-
-# Explicit block engine configuration mapping directly to the disk
+# Tells the storage layer to use the local disk instead of S3/Cloud
 blocks_storage:
-  backend: local
-  local:
-    directory: /tmp/mimir/blocks
-  bucket_store:
-    sync_dir: /tmp/mimir/tsdb-sync
+  backend: filesystem
   tsdb:
     dir: /tmp/mimir/tsdb
+  bucket_store:
+    sync_dir: /tmp/mimir/tsdb-sync
+  filesystem:
+    dir: /tmp/mimir/data/tsdb
 
 compactor:
   data_dir: /tmp/mimir/compactor
 
-# Explicitly assign local store for the Alertmanager engine to satisfy the unmarshaler
-alertmanager:
-  data_dir: /tmp/mimir/alertmanager
-  storage:
-    backend: local
-    local:
-      directory: /tmp/mimir/alerts
+# Simple in-memory setup for single-instance mode
+ingester:
+  ring:
+    kvstore:
+      store: inmemory
+    replication_factor: 1
 
-# Explicitly assign local store for the Ruler engine
-ruler:
-  data_dir: /tmp/mimir/ruler
-  storage:
-    backend: local
-    local:
-      directory: /tmp/mimir/rules
+# Direct paths for local rule and alert storage
+ruler_storage:
+  backend: filesystem
+  filesystem:
+    dir: /tmp/mimir/data/rules
+
+alertmanager_storage:
+  backend: filesystem
+  filesystem:
+    dir: /tmp/mimir/data/alerts
